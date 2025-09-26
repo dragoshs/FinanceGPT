@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "Rendimentos vs. Despesas",
   "incomeVsExpenses.income": "Rendimentos",
   "incomeVsExpenses.expenses": "Despesas",
+  "incomeVsExpenses.noData": "Nenhum dado de rendimento ou despesa para este período.",
   "achievements": "Conquistas",
   "wellness.placeholder": "As suas conquistas financeiras aparecerão aqui. Continue o bom trabalho!",
   "financialGoals": "Metas Financeiras",

@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "आय बनाम व्यय",
   "incomeVsExpenses.income": "आय",
   "incomeVsExpenses.expenses": "व्यय",
+  "incomeVsExpenses.noData": "इस अवधि के लिए कोई आय या व्यय डेटा नहीं है।",
   "achievements": "उपलब्धियां",
   "wellness.placeholder": "आपकी वित्तीय उपलब्धियां यहां दिखाई देंगी। बढ़िया काम करते रहें!",
   "financialGoals": "वित्तीय लक्ष्य",

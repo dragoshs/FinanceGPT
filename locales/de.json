@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "Einnahmen vs. Ausgaben",
   "incomeVsExpenses.income": "Einnahmen",
   "incomeVsExpenses.expenses": "Ausgaben",
+  "incomeVsExpenses.noData": "Keine Einnahmen- oder Ausgabendaten für diesen Zeitraum.",
   "achievements": "Erfolge",
   "wellness.placeholder": "Ihre finanziellen Erfolge werden hier angezeigt. Machen Sie weiter so!",
   "financialGoals": "Finanzielle Ziele",

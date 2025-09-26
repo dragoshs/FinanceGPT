@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "আয় বনাম ব্যয়",
   "incomeVsExpenses.income": "আয়",
   "incomeVsExpenses.expenses": "ব্যয়",
+  "incomeVsExpenses.noData": "এই সময়ের জন্য কোনো আয় বা ব্যয়ের ডেটা নেই।",
   "achievements": "কৃতিত্ব",
   "wellness.placeholder": "আপনার আর্থিক কৃতিত্ব এখানে প্রদর্শিত হবে। দারুণ কাজ চালিয়ে যান!",
   "financialGoals": "আর্থিক লক্ষ্য",

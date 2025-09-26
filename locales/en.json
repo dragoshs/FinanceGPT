@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "Income vs. Expenses",
   "incomeVsExpenses.income": "Income",
   "incomeVsExpenses.expenses": "Expenses",
+  "incomeVsExpenses.noData": "No income or expense data for this period.",
   "achievements": "Achievements",
   "wellness.placeholder": "Your financial achievements will appear here. Keep up the great work!",
   "financialGoals": "Financial Goals",

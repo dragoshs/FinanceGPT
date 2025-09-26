@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "الدخل مقابل المصروفات",
   "incomeVsExpenses.income": "الدخل",
   "incomeVsExpenses.expenses": "المصروفات",
+  "incomeVsExpenses.noData": "لا توجد بيانات دخل أو مصروفات لهذه الفترة.",
   "achievements": "الإنجازات",
   "wellness.placeholder": "ستظهر إنجازاتك المالية هنا. استمر في العمل الرائع!",
   "financialGoals": "الأهداف المالية",

@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "Доходы и расходы",
   "incomeVsExpenses.income": "Доходы",
   "incomeVsExpenses.expenses": "Расходы",
+  "incomeVsExpenses.noData": "Нет данных о доходах или расходах за этот период.",
   "achievements": "Достижения",
   "wellness.placeholder": "Ваши финансовые достижения будут отображаться здесь. Продолжайте в том же духе!",
   "financialGoals": "Финансовые цели",

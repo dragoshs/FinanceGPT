@@ -20,6 +20,7 @@
   "incomeVsExpenses.title": "收入 vs. 支出",
   "incomeVsExpenses.income": "收入",
   "incomeVsExpenses.expenses": "支出",
+  "incomeVsExpenses.noData": "此期间无收入或支出数据。",
   "achievements": "成就",
   "wellness.placeholder": "您的财务成就将显示在此处。继续努力！",
   "financialGoals": "财务目标",

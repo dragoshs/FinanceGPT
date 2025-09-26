@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 // FIX: Import BudgetCategory to correctly type budget items
 import { Budget, Goal, Expense, Currency, TimePeriod, Achievement, CryptoHolding, CryptoPrice, BudgetCategory } from '../types';
@@ -84,8 +86,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
   const { budget, goals, expenses, totalIncome, currency, supportedCurrencies, achievements, cryptoHoldings, cryptoPrices, cryptoDisplayCurrency, onCryptoDisplayCurrencyChange, onAddGoalClick, onAddCategoryClick, onAddCryptoClick, onDeleteGoal, onDeleteCategory, onEditCategory, onEditExpense, onDeleteExpense, onEditCrypto, onDeleteCrypto, timePeriod, onTimePeriodChange, onCustomDateRangeClick, dateRange } = props;
   const { t } = useI18n();
 
-  // FIX: Cast `cat` to BudgetCategory to access `spent` property, as Object.values may return `unknown[]`.
-  const totalSpent = Object.values(budget).reduce((sum, cat) => sum + (cat as BudgetCategory).spent, 0);
+  // FIX: Explicitly cast Object.values(budget) to BudgetCategory[] to ensure correct type inference within the reduce function. This resolves errors on lines 88, 89, and 129.
+  const totalSpent = (Object.values(budget) as BudgetCategory[]).reduce((sum, cat) => sum + cat.spent, 0);
   const netCashFlow = totalIncome - totalSpent;
   
   const totalCryptoValue = cryptoHoldings.reduce((sum, holding) => {
@@ -146,6 +148,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-2 space-y-8">
+            <IncomeExpenseChart income={totalIncome} expenses={totalSpent} currency={currency} />
             <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{t('spendingBreakdown')}</h3>
@@ -159,7 +162,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                 </div>
                 <DonutChart budget={budget} currency={currency} onDeleteCategory={onDeleteCategory} onEditCategory={onEditCategory} />
             </div>
-            <IncomeExpenseChart income={totalIncome} expenses={totalSpent} currency={currency} />
         </div>
         <div className="lg:col-span-3">
           <div className="space-y-6">
