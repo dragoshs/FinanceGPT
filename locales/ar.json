@@ -1,0 +1,93 @@
+
+{
+  "initialGreeting": "أهلاً بك! أنا FinanceGPT. كيف يمكنني مساعدتك في إدارة أموالك اليوم؟ يمكنك تسجيل النفقات مثل 'أنفقت 50 دولارًا على البقالة' أو أن تسأل 'كيف هو وضعي المالي؟'",
+  "financialOverview": "نظرة عامة مالية",
+  "showingDataFrom": "عرض البيانات من",
+  "to": "إلى",
+  "timePeriod.week": "هذا الأسبوع",
+  "timePeriod.month": "هذا الشهر",
+  "timePeriod.all": "كل الأوقات",
+  "timePeriod.custom": "مخصص",
+  "statCard.totalSpent": "إجمالي المصروفات",
+  "statCard.netCashFlow": "صافي التدفق النقدي",
+  "statCard.topSpending": "أعلى فئة إنفاق",
+  "statCard.cryptoValue": "قيمة العملات المشفرة",
+  "spendingBreakdown": "تفاصيل الإنفاق",
+  "addCategory": "إضافة فئة",
+  "donut.noCategories": "لا توجد فئات ميزانية محددة. انقر على 'إضافة فئة' للبدء.",
+  "donut.noSpending": "لا توجد بيانات إنفاق لعرضها حتى الآن.",
+  "donut.totalSpent": "إجمالي المصروفات",
+  "achievements": "الإنجازات",
+  "wellness.placeholder": "ستظهر إنجازاتك المالية هنا. استمر في العمل الرائع!",
+  "financialGoals": "الأهداف المالية",
+  "addGoal": "إضافة هدف",
+  "goal.placeholder": "لم يتم تحديد أهداف بعد. انقر على 'إضافة هدف' للبدء!",
+  "goal.target": "الهدف",
+  "goal.saved": "تم توفيره",
+  "cryptoHoldings": "ممتلكات العملات المشفرة",
+  "crypto.displayIn": "عرض بـ",
+  "crypto.addAsset": "إضافة أصل",
+  "crypto.placeholder": "لا توجد أصول مشفرة متتبعة. انقر على 'إضافة أصل' للبدء.",
+  "crypto.coinsUnit": "عملات",
+  "crypto.pricePerCoinUnit": "1 عملة =",
+  "recentTransactions": "المعاملات الأخيرة",
+  "transactions.placeholder": "لا توجد معاملات لهذه الفترة.",
+  "chat.title": "مساعد FinanceGPT",
+  "chat.subtitlePlayground": "🚀 وضع الملعب: اسألني أي شيء!",
+  "chat.subtitleNormal": "اسألني عن أموالك",
+  "chat.playgroundLabel": "الملعب",
+  "chat.attachReceipt": "إرفاق إيصال",
+  "chat.inputPlaceholder": "سجل نفقة أو قم بتحميل إيصال...",
+  "chat.listening": "أستمع...",
+  "chat.startRecording": "بدء التسجيل",
+  "chat.stopRecording": "إيقاف التسجيل",
+  "chat.sendMessage": "إرسال رسالة",
+  "addGoalModal.title": "إضافة هدف مالي جديد",
+  "addGoalModal.descriptionLabel": "وصف الهدف",
+  "addGoalModal.descriptionPlaceholder": "مثال: الادخار لشراء كمبيوتر محمول جديد",
+  "addGoalModal.targetLabel": "المبلغ المستهدف ({currencyCode})",
+  "addGoalModal.deadlineLabel": "الموعد النهائي (اختياري)",
+  "addGoalModal.button": "إضافة هدف",
+  "addCategoryModal.title": "إضافة فئة ميزانية جديدة",
+  "addCategoryModal.nameLabel": "اسم الفئة",
+  "addCategoryModal.namePlaceholder": "مثال: مستلزمات الحيوانات الأليفة",
+  "addCategoryModal.limitLabel": "حد الميزانية الشهري ({currencyCode})",
+  "addCategoryModal.button": "إضافة فئة",
+  "editExpenseModal.title": "تعديل المعاملة",
+  "editExpenseModal.descriptionLabel": "الوصف",
+  "editExpenseModal.amountLabel": "المبلغ ({currencyCode})",
+  "editExpenseModal.categoryLabel": "الفئة",
+  "editExpenseModal.subcategoryLabel": "فئة فرعية (اختياري)",
+  "editExpenseModal.subcategoryPlaceholder": "مثال: بقالة",
+  "editExpenseModal.button": "حفظ التغييرات",
+  "editCategoryModal.title": "تعديل فئة الميزانية",
+  "editCategoryModal.nameLabel": "اسم الفئة",
+  "editCategoryModal.limitLabel": "حد الميزانية الشهري ({currencyCode})",
+  "editCategoryModal.button": "حفظ التغييرات",
+  "dateRangeModal.title": "تحديد نطاق تاريخ مخصص",
+  "dateRangeModal.startLabel": "تاريخ البدء",
+  "dateRangeModal.endLabel": "تاريخ الانتهاء",
+  "dateRangeModal.button": "تطبيق",
+  "addCryptoModal.title.add": "إضافة أصل مشفر",
+  "addCryptoModal.title.edit": "تعديل أصل مشفر",
+  "addCryptoModal.searchLabel": "العملة المشفرة",
+  "addCryptoModal.searchPlaceholder": "ابحث عن عملة (مثال: بيتكوين)",
+  "addCryptoModal.amountLabel": "الكمية المملوكة",
+  "addCryptoModal.amountPlaceholder": "مثال: 0.5",
+  "addCryptoModal.valueLabel": "عرض القيمة بـ",
+  "addCryptoModal.fetchingPrice": "جلب السعر...",
+  "addCryptoModal.estimatedValue": "القيمة المقدرة",
+  "addCryptoModal.button.add": "إضافة أصل",
+  "addCryptoModal.button.edit": "حفظ التغييرات",
+  "confirmationModal.yes": "نعم",
+  "confirmationModal.no": "لا",
+  "deleteGoalModal.title": "حذف الهدف",
+  "deleteGoalModal.message": "هل أنت متأكد أنك تريد حذف الهدف \"{description}\"؟",
+  "deleteCategoryModal.title": "حذف الفئة",
+  "deleteCategoryModal.message": "هل أنت متأكد أنك تريد حذف الفئة \"{categoryName}\"؟ سيتم نقل جميع النفقات المرتبطة إلى 'أخرى'.",
+  "deleteTransactionModal.title": "حذف المعاملة",
+  "deleteTransactionModal.message": "هل أنت متأكد أنك تريد حذف المعاملة \"{description}\"؟",
+  "deleteCryptoModal.title": "حذف الأصل المشفر",
+  "deleteCryptoModal.message": "هل أنت متأكد أنك تريد حذف الأصل المتتبع {name}؟",
+  "common.cancel": "إلغاء"
+}

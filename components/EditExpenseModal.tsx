@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Expense, Currency, Budget } from '../types';
 import { CloseIcon } from './icons';
+import { useI18n } from '../i18n';
 
 interface EditExpenseModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
   const [amount, setAmount] = useState(expense.amount.toString());
   const [category, setCategory] = useState(expense.category);
   const [subcategory, setSubcategory] = useState(expense.subcategory || '');
+  const { t } = useI18n();
 
   useEffect(() => {
     setDescription(expense.description);
@@ -48,7 +50,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
     >
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md m-4">
         <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Edit Transaction</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{t('editExpenseModal.title')}</h2>
           <button 
             onClick={onClose} 
             className="p-1 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
@@ -60,7 +62,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
             <div>
-              <label htmlFor="edit-description" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Description</label>
+              <label htmlFor="edit-description" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t('editExpenseModal.descriptionLabel')}</label>
               <input
                 type="text"
                 id="edit-description"
@@ -72,7 +74,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
             </div>
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label htmlFor="edit-amount" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Amount ({currency.code})</label>
+                    <label htmlFor="edit-amount" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t('editExpenseModal.amountLabel', { currencyCode: currency.code })}</label>
                     <input
                         type="number"
                         id="edit-amount"
@@ -85,7 +87,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
                     />
                 </div>
                  <div>
-                    <label htmlFor="edit-category" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Category</label>
+                    <label htmlFor="edit-category" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t('editExpenseModal.categoryLabel')}</label>
                     <select
                         id="edit-category"
                         value={category}
@@ -97,13 +99,13 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
                 </div>
             </div>
              <div>
-              <label htmlFor="edit-subcategory" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Subcategory (Optional)</label>
+              <label htmlFor="edit-subcategory" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t('editExpenseModal.subcategoryLabel')}</label>
               <input
                 type="text"
                 id="edit-subcategory"
                 value={subcategory}
                 onChange={(e) => setSubcategory(e.target.value)}
-                placeholder="e.g., Groceries"
+                placeholder={t('editExpenseModal.subcategoryPlaceholder')}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
               />
             </div>
@@ -114,13 +116,13 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ isOpen, onClose, on
               onClick={onClose}
               className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600 dark:focus:ring-offset-slate-800"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Save Changes
+              {t('editExpenseModal.button')}
             </button>
           </div>
         </form>

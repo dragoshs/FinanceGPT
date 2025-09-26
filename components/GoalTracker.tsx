@@ -2,6 +2,7 @@ import React from 'react';
 import { Goal, Currency } from '../types';
 import { formatCurrency } from '../utils/formatting';
 import { TrashIcon } from './icons';
+import { useI18n } from '../i18n';
 
 interface GoalTrackerProps {
   goal: Goal;
@@ -10,6 +11,7 @@ interface GoalTrackerProps {
 }
 
 const GoalTracker: React.FC<GoalTrackerProps> = ({ goal, currency, onDelete }) => {
+  const { t } = useI18n();
   const percentage = Math.min((goal.saved / goal.target) * 100, 100);
 
   return (
@@ -24,7 +26,7 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goal, currency, onDelete }) =
       <div className="flex justify-between items-baseline mb-1 pr-6">
         <h3 className="font-semibold text-slate-800 dark:text-slate-200">{goal.description}</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-            Target: {formatCurrency(goal.target, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            {t('goal.target')}: {formatCurrency(goal.target, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </p>
       </div>
      
@@ -37,7 +39,7 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ goal, currency, onDelete }) =
       </div>
       <div className="flex justify-between items-center text-sm">
         <p className="font-medium text-slate-600 dark:text-slate-300">
-            {formatCurrency(goal.saved, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} saved
+            {formatCurrency(goal.saved, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {t('goal.saved')}
         </p>
         <p className="font-semibold text-teal-600 dark:text-teal-400">{percentage.toFixed(0)}%</p>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Currency } from '../types';
 import { CloseIcon } from './icons';
+import { useI18n } from '../i18n';
 
 interface EditCategoryModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface EditCategoryModalProps {
 const EditCategoryModal: React.FC<EditCategoryModalProps> = ({ isOpen, onClose, onUpdateCategory, category, currency }) => {
   const [name, setName] = useState(category.name);
   const [limit, setLimit] = useState(category.limit.toString());
+  const { t } = useI18n();
 
   useEffect(() => {
     setName(category.name);
@@ -40,7 +42,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({ isOpen, onClose, 
     >
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md m-4">
         <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Edit Budget Category</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{t('editCategoryModal.title')}</h2>
           <button 
             onClick={onClose} 
             className="p-1 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
@@ -52,7 +54,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({ isOpen, onClose, 
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
             <div>
-              <label htmlFor="edit-cat-name" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Category Name</label>
+              <label htmlFor="edit-cat-name" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t('editCategoryModal.nameLabel')}</label>
               <input
                 type="text"
                 id="edit-cat-name"
@@ -63,7 +65,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({ isOpen, onClose, 
               />
             </div>
             <div>
-              <label htmlFor="edit-cat-limit" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Monthly Budget Limit ({currency.code})</label>
+              <label htmlFor="edit-cat-limit" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t('editCategoryModal.limitLabel', { currencyCode: currency.code })}</label>
               <input
                 type="number"
                 id="edit-cat-limit"
@@ -82,13 +84,13 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({ isOpen, onClose, 
               onClick={onClose}
               className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600 dark:focus:ring-offset-slate-800"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Save Changes
+              {t('editCategoryModal.button')}
             </button>
           </div>
         </form>

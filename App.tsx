@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
 import ChatWindow from './components/ChatWindow';
 import AddGoalModal from './components/AddGoalModal';
@@ -7,6 +9,7 @@ import ConfirmationModal from './components/ConfirmationModal';
 import EditExpenseModal from './components/EditExpenseModal';
 import EditCategoryModal from './components/EditCategoryModal';
 import DateRangeModal from './components/DateRangeModal';
+import AddCryptoModal from './components/AddCryptoModal';
 import {
   Budget,
   Goal,
@@ -18,11 +21,18 @@ import {
   Currency,
   TimePeriod,
   ExpenseCategory,
+  Achievement,
+  CryptoHolding,
+  CryptoPrice,
+  CryptoCoin,
 } from './types';
-import { INITIAL_BUDGET, INITIAL_GOALS, INITIAL_EXPENSES, SUPPORTED_CURRENCIES } from './constants';
-import { getFinancialAdvice } from './services/geminiService';
+import { INITIAL_BUDGET, INITIAL_GOALS, INITIAL_EXPENSES, SUPPORTED_CURRENCIES, SUPPORTED_LANGUAGES } from './constants';
+import { getFinancialAdvice, getCelebratoryMessage } from './services/geminiService';
+import { fetchCryptoPrices, fetchSupportedCoins } from './services/cryptoService';
 import CurrencySwitcher from './components/CurrencySwitcher';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { MoonIcon, SunIcon } from './components/icons';
+import { I18nProvider, useI18n } from './i18n';
 
 const getInitialTheme = (): 'light' | 'dark' => {
   const storedTheme = localStorage.getItem('theme');
@@ -32,17 +42,21 @@ const getInitialTheme = (): 'light' | 'dark' => {
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     return 'dark';
   }
-  return 'light';
+  return 'dark';
 };
 
-
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [budget, setBudget] = useState<Budget>(INITIAL_BUDGET);
   const [goals, setGoals] = useState<Goal[]>(INITIAL_GOALS);
   const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: MessageRole.MODEL, content: "Hello! I'm FinanceGPT. How can I help you manage your money today? You can log expenses like 'I spent $50 on groceries' or ask 'How's my budget doing?'" }
-  ]);
+  const { t, languageCode, setLanguageCode } = useI18n();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  useEffect(() => {
+    setMessages([{ role: MessageRole.MODEL, content: t('initialGreeting') }]);
+  }, [t]);
+
+
   const [isLoading, setIsLoading] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
   const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
@@ -54,6 +68,18 @@ const App: React.FC = () => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
   const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ start: string | null; end: string | null }>({ start: null, end: null });
+  
+  const [isPlaygroundMode, setIsPlaygroundMode] = useState(false);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [awardedAchievements, setAwardedAchievements] = useState<Set<string>>(new Set());
+  
+  // Crypto State
+  const [cryptoHoldings, setCryptoHoldings] = useState<CryptoHolding[]>([]);
+  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice>({});
+  const [supportedCoins, setSupportedCoins] = useState<CryptoCoin[]>([]);
+  const [isAddCryptoModalOpen, setIsAddCryptoModalOpen] = useState(false);
+  const [editingCrypto, setEditingCrypto] = useState<CryptoHolding | null>(null);
+  const [cryptoDisplayCurrencyCode, setCryptoDisplayCurrencyCode] = useState<string>(currencyCode);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -64,6 +90,53 @@ const App: React.FC = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [theme]);
+
+  // Sync crypto display currency when main currency changes
+  useEffect(() => {
+    setCryptoDisplayCurrencyCode(currencyCode);
+  }, [currencyCode]);
+  
+  // Fetch supported coins on initial load
+  useEffect(() => {
+    const loadSupportedCoins = async () => {
+      const coins = await fetchSupportedCoins();
+      setSupportedCoins(coins);
+    };
+    loadSupportedCoins();
+  }, []);
+
+  // Fetch crypto prices when holdings change
+  useEffect(() => {
+    if (cryptoHoldings.length > 0) {
+      const fetchPrices = async () => {
+        const coinIds = cryptoHoldings.map(h => h.apiId);
+        const currencyCodes = SUPPORTED_CURRENCIES.map(c => c.code);
+        const prices = await fetchCryptoPrices(coinIds, currencyCodes);
+        if (prices) {
+          setCryptoPrices(prices);
+        }
+      };
+      fetchPrices();
+    }
+  }, [cryptoHoldings]);
+
+  // Financial Wellness System Logic
+  useEffect(() => {
+    const checkAchievements = async () => {
+      // Goal Milestone Achievement
+      goals.forEach(async (goal) => {
+        const achievementId = `goal-50-${goal.id}`;
+        if (goal.saved / goal.target >= 0.5 && !awardedAchievements.has(achievementId)) {
+          const message = await getCelebratoryMessage(`Reaching 50% of the goal: "${goal.description}"`);
+          setAchievements(prev => [...prev, { id: achievementId, title: 'Goal Milestone!', message, date: new Date().toISOString() }]);
+          setAwardedAchievements(prev => new Set(prev).add(achievementId));
+        }
+      });
+      // Add more achievement checks here (e.g., spending streaks)
+    };
+
+    checkAchievements();
+  }, [goals, expenses, awardedAchievements]);
 
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
@@ -77,27 +150,27 @@ const App: React.FC = () => {
   });
   
   const selectedCurrency = SUPPORTED_CURRENCIES.find(c => c.code === currencyCode) || SUPPORTED_CURRENCIES[0];
+  const cryptoDisplayCurrency = SUPPORTED_CURRENCIES.find(c => c.code === cryptoDisplayCurrencyCode) || SUPPORTED_CURRENCIES[0];
 
   const filteredData = useMemo(() => {
     const now = new Date();
     let startDate: Date;
-    let endDate: Date = new Date(); // Today by default for week/month
+    let endDate: Date = new Date();
 
     if (timePeriod === 'custom' && dateRange.start && dateRange.end) {
         startDate = new Date(dateRange.start);
-        startDate.setHours(0, 0, 0, 0); // Start of the selected day
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(dateRange.end);
-        endDate.setHours(23, 59, 59, 999); // End of the selected day
+        endDate.setHours(23, 59, 59, 999);
     } else if (timePeriod === 'month') {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     } else if (timePeriod === 'week') {
         startDate = new Date(now);
-        const dayOfWeek = now.getDay(); // Sunday - 0, Monday - 1...
-        startDate.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Set to Monday
+        const dayOfWeek = now.getDay();
+        startDate.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
         startDate.setHours(0, 0, 0, 0);
-    } else { // 'all'
+    } else {
         startDate = new Date(0);
-        endDate = new Date(); // End date is today for 'all' as well
     }
 
     const relevantExpenses = expenses.filter(e => {
@@ -105,22 +178,15 @@ const App: React.FC = () => {
       return expenseDate >= startDate && expenseDate <= endDate;
     });
     
-    // Create a deep copy to avoid direct state mutation
     const newBudget = JSON.parse(JSON.stringify(budget)) as Budget;
-    
-    // Ensure all categories from the main budget exist in the new budget
     Object.keys(budget).forEach(category => {
-        if (!newBudget[category]) {
-            newBudget[category] = { ...budget[category], spent: 0 };
-        }
+        if (!newBudget[category]) newBudget[category] = { ...budget[category], spent: 0 };
     });
 
-    // Reset all spent values
     for (const category in newBudget) {
         newBudget[category].spent = 0;
     }
     
-    // Recalculate based on relevant expenses
     relevantExpenses.forEach(expense => {
         if (newBudget[expense.category]) {
             newBudget[expense.category].spent += expense.amount;
@@ -134,59 +200,39 @@ const App: React.FC = () => {
     return { filteredExpenses: relevantExpenses, filteredBudget: newBudget };
   }, [expenses, budget, timePeriod, dateRange]);
 
-
-  const handleSendMessage = async (userInput: string) => {
-    const newUserMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
-    setMessages(prev => [...prev, newUserMessage]);
-    setIsLoading(true);
-
-    const geminiResponse = await getFinancialAdvice(userInput, budget, goals, expenses, selectedCurrency);
-
-    if (geminiResponse) {
-      handleGeminiResponse(geminiResponse);
-    } else {
-      const errorMessage: ChatMessage = {
-        role: MessageRole.MODEL,
-        content: "Sorry, I encountered an error. Please try again."
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    }
-    
-    setIsLoading(false);
-  };
-
-  const handleGeminiResponse = (response: GeminiResponse) => {
+  const handleGeminiResponse = useCallback((response: GeminiResponse) => {
     const newModelMessage: ChatMessage = { role: MessageRole.MODEL, content: response.summary_text };
     setMessages(prev => [...prev, newModelMessage]);
 
-    switch (response.response_type) {
-      case ResponseType.EXPENSE_LOGGED:
-        if (response.expense) {
-          const newExpense: Expense = {
-            id: new Date().toISOString() + Math.random(), // Add random number for uniqueness
-            ...response.expense,
+    if (response.response_type === ResponseType.EXPENSE_LOGGED && response.expense) {
+        const expensesToLog = Array.isArray(response.expense) ? response.expense : [response.expense];
+
+        const newExpenses: Expense[] = expensesToLog.map(exp => ({
+            id: new Date().toISOString() + Math.random(),
+            ...exp,
             date: new Date().toISOString(),
-          };
-          setExpenses(prev => [...prev, newExpense]);
-          setBudget(prevBudget => {
+        }));
+
+        setExpenses(prev => [...prev, ...newExpenses]);
+        
+        setBudget(prevBudget => {
             const newBudget = { ...prevBudget };
-            const category = newExpense.category;
-            
-            if (!newBudget[category]) {
-                console.warn(`AI returned non-existent category: ${category}. Creating it now.`);
-                newBudget[category] = { limit: newExpense.amount, spent: 0 };
-            }
-
-            newBudget[category] = {
-              ...newBudget[category],
-              spent: newBudget[category].spent + newExpense.amount,
-            };
-
+            newExpenses.forEach(newExpense => {
+                const category = newExpense.category;
+                if (!newBudget[category]) {
+                    console.warn(`AI returned non-existent category: ${category}. Creating it now.`);
+                    newBudget[category] = { limit: newExpense.amount > 0 ? newExpense.amount : 1, spent: 0 };
+                }
+                newBudget[category] = {
+                    ...newBudget[category],
+                    spent: newBudget[category].spent + newExpense.amount,
+                };
+            });
             return newBudget;
-          });
-        }
-        break;
-      
+        });
+    }
+
+    switch (response.response_type) {
       case ResponseType.GOAL_CREATED:
         if (response.goal && typeof response.goal.target === 'number') {
           const newGoal: Goal = {
@@ -211,9 +257,33 @@ const App: React.FC = () => {
         }
         break;
     }
-  };
+  }, []);
 
-  const handleAddGoal = (goalData: Omit<Goal, 'id' | 'saved'>) => {
+  const handleSendMessage = useCallback(async (userInput: string, isPlayground: boolean, image?: { data: string, mimeType: string }) => {
+    const newUserMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
+    setMessages(prev => [...prev, newUserMessage]);
+    setIsLoading(true);
+
+    const geminiResponse = await getFinancialAdvice(userInput, budget, goals, expenses, selectedCurrency, languageCode, isPlayground, image?.data, image?.mimeType);
+
+    if (geminiResponse) {
+      handleGeminiResponse(geminiResponse);
+    } else {
+      const errorMessage: ChatMessage = {
+        role: MessageRole.MODEL,
+        content: "Sorry, I encountered an error. Please try again."
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+    
+    setIsLoading(false);
+  }, [budget, goals, expenses, selectedCurrency, languageCode, handleGeminiResponse]);
+  
+  const handleNewMessage = useCallback((message: ChatMessage) => {
+    setMessages(prev => [...prev, message]);
+  }, []);
+
+  const handleAddGoal = useCallback((goalData: Omit<Goal, 'id' | 'saved'>) => {
     const newGoal: Goal = {
       id: new Date().toISOString(),
       ...goalData,
@@ -221,37 +291,37 @@ const App: React.FC = () => {
     };
     setGoals(prev => [...prev, newGoal]);
     setIsAddGoalModalOpen(false);
-  };
+  }, []);
 
-  const handleAddCategory = (categoryData: { name: string; limit: number }) => {
-    if (!budget[categoryData.name]) { // Prevent duplicates
+  const handleAddCategory = useCallback((categoryData: { name: string; limit: number }) => {
+    if (!budget[categoryData.name]) {
       setBudget(prev => ({
         ...prev,
         [categoryData.name]: { limit: categoryData.limit, spent: 0 }
       }));
     }
     setIsAddCategoryModalOpen(false);
-  };
+  }, [budget]);
 
-  const handleDeleteGoal = (id: string) => {
+  const handleDeleteGoal = useCallback((id: string) => {
     const goalToDelete = goals.find(g => g.id === id);
     if (!goalToDelete) return;
 
     setConfirmationState({
       isOpen: true,
-      title: 'Delete Goal',
-      message: `Are you sure you want to delete the goal "${goalToDelete.description}"?`,
+      title: t('deleteGoalModal.title'),
+      message: t('deleteGoalModal.message', { description: goalToDelete.description }),
       onConfirm: () => {
         setGoals(prevGoals => prevGoals.filter(goal => goal.id !== id));
       },
     });
-  };
+  }, [goals, t]);
 
-  const handleDeleteCategory = (categoryName: string) => {
+  const handleDeleteCategory = useCallback((categoryName: string) => {
     setConfirmationState({
       isOpen: true,
-      title: 'Delete Category',
-      message: `Are you sure you want to delete the "${categoryName}" category? All associated expenses will be moved to 'Other'.`,
+      title: t('deleteCategoryModal.title'),
+      message: t('deleteCategoryModal.message', { categoryName }),
       onConfirm: () => {
         let amountToMove = 0;
         const updatedExpenses = expenses.map(e => {
@@ -266,42 +336,50 @@ const App: React.FC = () => {
         setBudget(prevBudget => {
           const newBudget = { ...prevBudget };
           if (newBudget[ExpenseCategory.Other]) {
-            newBudget[ExpenseCategory.Other].spent += amountToMove;
+            // FIX: Immutable update for 'Other' category
+            newBudget[ExpenseCategory.Other] = {
+              ...newBudget[ExpenseCategory.Other],
+              spent: newBudget[ExpenseCategory.Other].spent + amountToMove,
+            };
           }
           delete newBudget[categoryName];
           return newBudget;
         });
       },
     });
-  };
+  }, [expenses, t]);
 
-  const handleDeleteExpense = (id: string) => {
+  const handleDeleteExpense = useCallback((id: string) => {
     const expenseToDelete = expenses.find(e => e.id === id);
     if (!expenseToDelete) return;
 
     setConfirmationState({
       isOpen: true,
-      title: 'Delete Transaction',
-      message: `Are you sure you want to delete the transaction "${expenseToDelete.description}"?`,
+      title: t('deleteTransactionModal.title'),
+      message: t('deleteTransactionModal.message', { description: expenseToDelete.description }),
       onConfirm: () => {
         setBudget(prevBudget => {
           const newBudget = { ...prevBudget };
           const category = expenseToDelete.category;
           if (newBudget[category]) {
-            newBudget[category].spent -= expenseToDelete.amount;
+            // FIX: Immutable update for the category's spent amount
+            newBudget[category] = {
+              ...newBudget[category],
+              spent: newBudget[category].spent - expenseToDelete.amount,
+            };
           }
           return newBudget;
         });
         setExpenses(prevExpenses => prevExpenses.filter(e => e.id !== id));
       },
     });
-  };
+  }, [expenses, t]);
 
   const closeConfirmationModal = () => {
     setConfirmationState({ ...confirmationState, isOpen: false });
   };
   
-  const handleUpdateExpense = (updatedExpense: Expense) => {
+  const handleUpdateExpense = useCallback((updatedExpense: Expense) => {
       const originalExpense = expenses.find(e => e.id === updatedExpense.id);
       if (!originalExpense) return;
 
@@ -309,44 +387,57 @@ const App: React.FC = () => {
 
       setBudget(prevBudget => {
           const newBudget = { ...prevBudget };
-          const originalCategory = originalExpense.category;
-          const newCategory = updatedExpense.category;
+          const originalCategoryName = originalExpense.category;
+          const newCategoryName = updatedExpense.category;
 
-          if (newBudget[originalCategory]) {
-              newBudget[originalCategory] = {
-                  ...newBudget[originalCategory],
-                  spent: newBudget[originalCategory].spent - originalExpense.amount
-              };
-          }
-
-          if (newBudget[newCategory]) {
-              newBudget[newCategory] = {
-                  ...newBudget[newCategory],
-                  spent: newBudget[newCategory].spent + updatedExpense.amount
-              };
+          // FIX: Immutable updates for budget spent amounts
+          if (originalCategoryName === newCategoryName) {
+              if (newBudget[originalCategoryName]) {
+                  const amountDifference = updatedExpense.amount - originalExpense.amount;
+                  newBudget[originalCategoryName] = {
+                      ...newBudget[originalCategoryName],
+                      spent: newBudget[originalCategoryName].spent + amountDifference
+                  };
+              }
           } else {
-             newBudget[newCategory] = { limit: updatedExpense.amount, spent: updatedExpense.amount };
+              if (newBudget[originalCategoryName]) {
+                  newBudget[originalCategoryName] = {
+                      ...newBudget[originalCategoryName],
+                      spent: newBudget[originalCategoryName].spent - originalExpense.amount
+                  };
+              }
+              if (newBudget[newCategoryName]) {
+                  newBudget[newCategoryName] = {
+                      ...newBudget[newCategoryName],
+                      spent: newBudget[newCategoryName].spent + updatedExpense.amount
+                  };
+              } else {
+                  newBudget[newCategoryName] = { limit: updatedExpense.amount, spent: updatedExpense.amount };
+              }
           }
-          
           return newBudget;
       });
 
       setEditingExpense(null);
-  };
+  }, [expenses]);
 
-  const handleUpdateCategory = (originalName: string, updatedCategory: { name: string; limit: number }) => {
+  const handleUpdateCategory = useCallback((originalName: string, updatedCategory: { name: string; limit: number }) => {
     setBudget(prevBudget => {
         const newBudget = { ...prevBudget };
-        const originalCategoryData = newBudget[originalName];
         
         if (originalName !== updatedCategory.name) {
+            const originalCategoryData = newBudget[originalName];
             newBudget[updatedCategory.name] = {
                 spent: originalCategoryData.spent,
                 limit: updatedCategory.limit
             };
             delete newBudget[originalName];
         } else {
-            newBudget[originalName].limit = updatedCategory.limit;
+            // FIX: Correctly update limit immutably
+            newBudget[originalName] = {
+                ...newBudget[originalName],
+                limit: updatedCategory.limit
+            };
         }
         return newBudget;
     });
@@ -360,13 +451,40 @@ const App: React.FC = () => {
     }
     
     setEditingCategory(null);
-  };
+  }, []);
+  
+  const handleAddOrUpdateCrypto = useCallback((holding: Omit<CryptoHolding, 'id'>, id?: string) => {
+    if(id) { // Update
+        setCryptoHoldings(prev => prev.map(h => h.id === id ? { ...h, ...holding } : h));
+    } else { // Add
+        const newHolding: CryptoHolding = {
+            id: new Date().toISOString(),
+            ...holding,
+        }
+        setCryptoHoldings(prev => [...prev, newHolding]);
+    }
+    setIsAddCryptoModalOpen(false);
+    setEditingCrypto(null);
+  }, []);
 
-  const handleSetCustomDateRange = (start: string, end: string) => {
+  const handleDeleteCrypto = useCallback((id: string) => {
+    const holdingToDelete = cryptoHoldings.find(h => h.id === id);
+    if (!holdingToDelete) return;
+    setConfirmationState({
+        isOpen: true,
+        title: t('deleteCryptoModal.title'),
+        message: t('deleteCryptoModal.message', { name: holdingToDelete.name }),
+        onConfirm: () => {
+            setCryptoHoldings(prev => prev.filter(h => h.id !== id));
+        },
+    });
+  }, [cryptoHoldings, t]);
+
+  const handleSetCustomDateRange = useCallback((start: string, end: string) => {
     setDateRange({ start, end });
     setTimePeriod('custom');
     setIsDateRangeModalOpen(false);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-200">
@@ -380,6 +498,11 @@ const App: React.FC = () => {
                     <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">FinanceGPT</h1>
                 </div>
                 <div className="flex items-center gap-4">
+                  <LanguageSwitcher
+                    currentLanguage={languageCode}
+                    onLanguageChange={setLanguageCode}
+                    languages={SUPPORTED_LANGUAGES}
+                  />
                   <CurrencySwitcher
                     currentCurrency={currencyCode}
                     onCurrencyChange={setCurrencyCode}
@@ -404,77 +527,53 @@ const App: React.FC = () => {
               goals={goals} 
               expenses={filteredData.filteredExpenses}
               currency={selectedCurrency}
+              supportedCurrencies={SUPPORTED_CURRENCIES}
+              achievements={achievements}
+              cryptoHoldings={cryptoHoldings}
+              cryptoPrices={cryptoPrices}
+              cryptoDisplayCurrency={cryptoDisplayCurrency}
+              onCryptoDisplayCurrencyChange={setCryptoDisplayCurrencyCode}
               onAddGoalClick={() => setIsAddGoalModalOpen(true)}
               onAddCategoryClick={() => setIsAddCategoryModalOpen(true)}
+              onAddCryptoClick={() => { setEditingCrypto(null); setIsAddCryptoModalOpen(true); }}
               onDeleteGoal={handleDeleteGoal}
               onDeleteCategory={handleDeleteCategory}
               onEditCategory={(categoryName) => setEditingCategory({ name: categoryName, limit: budget[categoryName].limit })}
               onEditExpense={(expense) => setEditingExpense(expense)}
               onDeleteExpense={handleDeleteExpense}
+              onEditCrypto={(holding) => { setEditingCrypto(holding); setIsAddCryptoModalOpen(true); }}
+              onDeleteCrypto={handleDeleteCrypto}
               timePeriod={timePeriod}
               onTimePeriodChange={setTimePeriod}
               onCustomDateRangeClick={() => setIsDateRangeModalOpen(true)}
               dateRange={dateRange}
             />
-            <ChatWindow messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
+            <ChatWindow 
+              messages={messages} 
+              onSendMessage={handleSendMessage} 
+              isLoading={isLoading} 
+              isPlaygroundMode={isPlaygroundMode}
+              onPlaygroundModeChange={setIsPlaygroundMode}
+              onNewMessage={handleNewMessage}
+            />
         </div>
       </main>
 
-      {isAddGoalModalOpen && (
-        <AddGoalModal 
-          onClose={() => setIsAddGoalModalOpen(false)} 
-          onAddGoal={handleAddGoal}
-          currency={selectedCurrency}
-        />
-      )}
-
-      {isAddCategoryModalOpen && (
-        <AddCategoryModal
-          onClose={() => setIsAddCategoryModalOpen(false)}
-          onAddCategory={handleAddCategory}
-          currency={selectedCurrency}
-        />
-      )}
-
-      {editingExpense && (
-        <EditExpenseModal
-          isOpen={!!editingExpense}
-          onClose={() => setEditingExpense(null)}
-          onUpdateExpense={handleUpdateExpense}
-          expense={editingExpense}
-          currency={selectedCurrency}
-          budget={budget}
-        />
-      )}
-
-      {editingCategory && (
-        <EditCategoryModal
-          isOpen={!!editingCategory}
-          onClose={() => setEditingCategory(null)}
-          onUpdateCategory={handleUpdateCategory}
-          category={editingCategory}
-          currency={selectedCurrency}
-        />
-      )}
-
-      {confirmationState.isOpen && (
-        <ConfirmationModal
-          isOpen={confirmationState.isOpen}
-          onClose={closeConfirmationModal}
-          onConfirm={confirmationState.onConfirm}
-          title={confirmationState.title}
-          message={confirmationState.message}
-        />
-      )}
-
-      {isDateRangeModalOpen && (
-        <DateRangeModal 
-          onClose={() => setIsDateRangeModalOpen(false)}
-          onSetDateRange={handleSetCustomDateRange}
-        />
-      )}
+      {isAddGoalModalOpen && <AddGoalModal onClose={() => setIsAddGoalModalOpen(false)} onAddGoal={handleAddGoal} currency={selectedCurrency} />}
+      {isAddCategoryModalOpen && <AddCategoryModal onClose={() => setIsAddCategoryModalOpen(false)} onAddCategory={handleAddCategory} currency={selectedCurrency} />}
+      {isAddCryptoModalOpen && <AddCryptoModal onClose={() => { setIsAddCryptoModalOpen(false); setEditingCrypto(null); }} onSave={handleAddOrUpdateCrypto} supportedCoins={supportedCoins} initialData={editingCrypto} supportedCurrencies={SUPPORTED_CURRENCIES} cryptoPrices={cryptoPrices} previewCurrency={cryptoDisplayCurrency} />}
+      {editingExpense && <EditExpenseModal isOpen={!!editingExpense} onClose={() => setEditingExpense(null)} onUpdateExpense={handleUpdateExpense} expense={editingExpense} currency={selectedCurrency} budget={budget} />}
+      {editingCategory && <EditCategoryModal isOpen={!!editingCategory} onClose={() => setEditingCategory(null)} onUpdateCategory={handleUpdateCategory} category={editingCategory} currency={selectedCurrency} />}
+      {confirmationState.isOpen && <ConfirmationModal isOpen={confirmationState.isOpen} onClose={closeConfirmationModal} onConfirm={confirmationState.onConfirm} title={confirmationState.title} message={confirmationState.message} />}
+      {isDateRangeModalOpen && <DateRangeModal onClose={() => setIsDateRangeModalOpen(false)} onSetDateRange={handleSetCustomDateRange} />}
     </div>
   );
 };
+
+const App: React.FC = () => (
+  <I18nProvider>
+    <AppContent />
+  </I18nProvider>
+);
 
 export default App;

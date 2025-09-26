@@ -1,5 +1,6 @@
 import React from 'react';
 import { CloseIcon } from './icons';
+import { useI18n } from '../i18n';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface ConfirmationModalProps {
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, onConfirm, title, message }) => {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   const handleConfirm = () => {
@@ -43,14 +45,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
             onClick={onClose}
             className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600 dark:focus:ring-offset-slate-800"
           >
-            No
+            {t('confirmationModal.no')}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             className="px-4 py-2 text-sm font-semibold text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
-            Yes
+            {t('confirmationModal.yes')}
           </button>
         </div>
       </div>

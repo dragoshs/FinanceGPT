@@ -54,12 +54,37 @@ export interface Currency {
   locale: string;
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+}
+
+export interface CryptoCoin {
+    id: string;
+    symbol: string;
+    name: string;
+}
+
+export interface CryptoHolding {
+    id: string; // Unique ID for the holding instance
+    apiId: string; // ID from the CoinGecko API e.g., 'bitcoin'
+    name: string;
+    symbol: string;
+    amount: number;
+}
+
+export type CryptoPrice = Record<string, { [currency: string]: number }>;
+
+
 export enum ResponseType {
   EXPENSE_LOGGED = 'EXPENSE_LOGGED',
   BUDGET_ANALYSIS = 'BUDGET_ANALYSIS',
   GOAL_CREATED = 'GOAL_CREATED',
   GOAL_UPDATED = 'GOAL_UPDATED',
   GENERAL_ADVICE = 'GENERAL_ADVICE',
+  SCENARIO_ANALYSIS = 'SCENARIO_ANALYSIS',
 }
 
 export interface GeminiExpensePayload {
@@ -69,7 +94,6 @@ export interface GeminiExpensePayload {
   subcategory?: string;
 }
 
-// FIX: Added optional 'saved' property and made 'target' optional to support both goal creation and updates.
 export interface GeminiGoalPayload {
   description: string;
   target?: number;
@@ -79,7 +103,7 @@ export interface GeminiGoalPayload {
 
 export interface GeminiResponse {
   response_type: ResponseType;
-  expense?: GeminiExpensePayload;
+  expense?: GeminiExpensePayload | GeminiExpensePayload[];
   goal?: GeminiGoalPayload;
   summary_text: string;
 }
