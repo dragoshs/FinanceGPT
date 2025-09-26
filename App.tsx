@@ -1,0 +1,480 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import Dashboard from './components/Dashboard';
+import ChatWindow from './components/ChatWindow';
+import AddGoalModal from './components/AddGoalModal';
+import AddCategoryModal from './components/AddCategoryModal';
+import ConfirmationModal from './components/ConfirmationModal';
+import EditExpenseModal from './components/EditExpenseModal';
+import EditCategoryModal from './components/EditCategoryModal';
+import DateRangeModal from './components/DateRangeModal';
+import {
+  Budget,
+  Goal,
+  Expense,
+  ChatMessage,
+  MessageRole,
+  ResponseType,
+  GeminiResponse,
+  Currency,
+  TimePeriod,
+  ExpenseCategory,
+} from './types';
+import { INITIAL_BUDGET, INITIAL_GOALS, INITIAL_EXPENSES, SUPPORTED_CURRENCIES } from './constants';
+import { getFinancialAdvice } from './services/geminiService';
+import CurrencySwitcher from './components/CurrencySwitcher';
+import { MoonIcon, SunIcon } from './components/icons';
+
+const getInitialTheme = (): 'light' | 'dark' => {
+  const storedTheme = localStorage.getItem('theme');
+  if (storedTheme === 'dark' || storedTheme === 'light') {
+    return storedTheme;
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+};
+
+
+const App: React.FC = () => {
+  const [budget, setBudget] = useState<Budget>(INITIAL_BUDGET);
+  const [goals, setGoals] = useState<Goal[]>(INITIAL_GOALS);
+  const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: MessageRole.MODEL, content: "Hello! I'm FinanceGPT. How can I help you manage your money today? You can log expenses like 'I spent $50 on groceries' or ask 'How's my budget doing?'" }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currencyCode, setCurrencyCode] = useState<string>('USD');
+  const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingCategory, setEditingCategory] = useState<{ name: string; limit: number } | null>(null);
+  
+  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
+  const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<{ start: string | null; end: string | null }>({ start: null, end: null });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+  
+  const [confirmationState, setConfirmationState] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+  
+  const selectedCurrency = SUPPORTED_CURRENCIES.find(c => c.code === currencyCode) || SUPPORTED_CURRENCIES[0];
+
+  const filteredData = useMemo(() => {
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = new Date(); // Today by default for week/month
+
+    if (timePeriod === 'custom' && dateRange.start && dateRange.end) {
+        startDate = new Date(dateRange.start);
+        startDate.setHours(0, 0, 0, 0); // Start of the selected day
+        endDate = new Date(dateRange.end);
+        endDate.setHours(23, 59, 59, 999); // End of the selected day
+    } else if (timePeriod === 'month') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (timePeriod === 'week') {
+        startDate = new Date(now);
+        const dayOfWeek = now.getDay(); // Sunday - 0, Monday - 1...
+        startDate.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Set to Monday
+        startDate.setHours(0, 0, 0, 0);
+    } else { // 'all'
+        startDate = new Date(0);
+        endDate = new Date(); // End date is today for 'all' as well
+    }
+
+    const relevantExpenses = expenses.filter(e => {
+      const expenseDate = new Date(e.date);
+      return expenseDate >= startDate && expenseDate <= endDate;
+    });
+    
+    // Create a deep copy to avoid direct state mutation
+    const newBudget = JSON.parse(JSON.stringify(budget)) as Budget;
+    
+    // Ensure all categories from the main budget exist in the new budget
+    Object.keys(budget).forEach(category => {
+        if (!newBudget[category]) {
+            newBudget[category] = { ...budget[category], spent: 0 };
+        }
+    });
+
+    // Reset all spent values
+    for (const category in newBudget) {
+        newBudget[category].spent = 0;
+    }
+    
+    // Recalculate based on relevant expenses
+    relevantExpenses.forEach(expense => {
+        if (newBudget[expense.category]) {
+            newBudget[expense.category].spent += expense.amount;
+        } else {
+           if (newBudget[ExpenseCategory.Other]) {
+                newBudget[ExpenseCategory.Other].spent += expense.amount;
+           }
+        }
+    });
+
+    return { filteredExpenses: relevantExpenses, filteredBudget: newBudget };
+  }, [expenses, budget, timePeriod, dateRange]);
+
+
+  const handleSendMessage = async (userInput: string) => {
+    const newUserMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
+    setMessages(prev => [...prev, newUserMessage]);
+    setIsLoading(true);
+
+    const geminiResponse = await getFinancialAdvice(userInput, budget, goals, expenses, selectedCurrency);
+
+    if (geminiResponse) {
+      handleGeminiResponse(geminiResponse);
+    } else {
+      const errorMessage: ChatMessage = {
+        role: MessageRole.MODEL,
+        content: "Sorry, I encountered an error. Please try again."
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+    
+    setIsLoading(false);
+  };
+
+  const handleGeminiResponse = (response: GeminiResponse) => {
+    const newModelMessage: ChatMessage = { role: MessageRole.MODEL, content: response.summary_text };
+    setMessages(prev => [...prev, newModelMessage]);
+
+    switch (response.response_type) {
+      case ResponseType.EXPENSE_LOGGED:
+        if (response.expense) {
+          const newExpense: Expense = {
+            id: new Date().toISOString() + Math.random(), // Add random number for uniqueness
+            ...response.expense,
+            date: new Date().toISOString(),
+          };
+          setExpenses(prev => [...prev, newExpense]);
+          setBudget(prevBudget => {
+            const newBudget = { ...prevBudget };
+            const category = newExpense.category;
+            
+            if (!newBudget[category]) {
+                console.warn(`AI returned non-existent category: ${category}. Creating it now.`);
+                newBudget[category] = { limit: newExpense.amount, spent: 0 };
+            }
+
+            newBudget[category] = {
+              ...newBudget[category],
+              spent: newBudget[category].spent + newExpense.amount,
+            };
+
+            return newBudget;
+          });
+        }
+        break;
+      
+      case ResponseType.GOAL_CREATED:
+        if (response.goal && typeof response.goal.target === 'number') {
+          const newGoal: Goal = {
+            id: new Date().toISOString(),
+            description: response.goal.description,
+            target: response.goal.target,
+            saved: 0,
+            deadline: response.goal.deadline,
+          };
+          setGoals(prev => [...prev, newGoal]);
+        }
+        break;
+        
+      case ResponseType.GOAL_UPDATED:
+        if(response.goal && response.goal.description && typeof response.goal.saved === 'number'){
+            setGoals(prevGoals => prevGoals.map(g => {
+                if(g.description.toLowerCase().includes(response.goal.description.toLowerCase())){
+                    return {...g, saved: g.saved + response.goal.saved};
+                }
+                return g;
+            }));
+        }
+        break;
+    }
+  };
+
+  const handleAddGoal = (goalData: Omit<Goal, 'id' | 'saved'>) => {
+    const newGoal: Goal = {
+      id: new Date().toISOString(),
+      ...goalData,
+      saved: 0,
+    };
+    setGoals(prev => [...prev, newGoal]);
+    setIsAddGoalModalOpen(false);
+  };
+
+  const handleAddCategory = (categoryData: { name: string; limit: number }) => {
+    if (!budget[categoryData.name]) { // Prevent duplicates
+      setBudget(prev => ({
+        ...prev,
+        [categoryData.name]: { limit: categoryData.limit, spent: 0 }
+      }));
+    }
+    setIsAddCategoryModalOpen(false);
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    const goalToDelete = goals.find(g => g.id === id);
+    if (!goalToDelete) return;
+
+    setConfirmationState({
+      isOpen: true,
+      title: 'Delete Goal',
+      message: `Are you sure you want to delete the goal "${goalToDelete.description}"?`,
+      onConfirm: () => {
+        setGoals(prevGoals => prevGoals.filter(goal => goal.id !== id));
+      },
+    });
+  };
+
+  const handleDeleteCategory = (categoryName: string) => {
+    setConfirmationState({
+      isOpen: true,
+      title: 'Delete Category',
+      message: `Are you sure you want to delete the "${categoryName}" category? All associated expenses will be moved to 'Other'.`,
+      onConfirm: () => {
+        let amountToMove = 0;
+        const updatedExpenses = expenses.map(e => {
+            if (e.category === categoryName) {
+                amountToMove += e.amount;
+                return { ...e, category: ExpenseCategory.Other };
+            }
+            return e;
+        });
+        setExpenses(updatedExpenses);
+
+        setBudget(prevBudget => {
+          const newBudget = { ...prevBudget };
+          if (newBudget[ExpenseCategory.Other]) {
+            newBudget[ExpenseCategory.Other].spent += amountToMove;
+          }
+          delete newBudget[categoryName];
+          return newBudget;
+        });
+      },
+    });
+  };
+
+  const handleDeleteExpense = (id: string) => {
+    const expenseToDelete = expenses.find(e => e.id === id);
+    if (!expenseToDelete) return;
+
+    setConfirmationState({
+      isOpen: true,
+      title: 'Delete Transaction',
+      message: `Are you sure you want to delete the transaction "${expenseToDelete.description}"?`,
+      onConfirm: () => {
+        setBudget(prevBudget => {
+          const newBudget = { ...prevBudget };
+          const category = expenseToDelete.category;
+          if (newBudget[category]) {
+            newBudget[category].spent -= expenseToDelete.amount;
+          }
+          return newBudget;
+        });
+        setExpenses(prevExpenses => prevExpenses.filter(e => e.id !== id));
+      },
+    });
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationState({ ...confirmationState, isOpen: false });
+  };
+  
+  const handleUpdateExpense = (updatedExpense: Expense) => {
+      const originalExpense = expenses.find(e => e.id === updatedExpense.id);
+      if (!originalExpense) return;
+
+      setExpenses(prevExpenses => prevExpenses.map(e => e.id === updatedExpense.id ? updatedExpense : e));
+
+      setBudget(prevBudget => {
+          const newBudget = { ...prevBudget };
+          const originalCategory = originalExpense.category;
+          const newCategory = updatedExpense.category;
+
+          if (newBudget[originalCategory]) {
+              newBudget[originalCategory] = {
+                  ...newBudget[originalCategory],
+                  spent: newBudget[originalCategory].spent - originalExpense.amount
+              };
+          }
+
+          if (newBudget[newCategory]) {
+              newBudget[newCategory] = {
+                  ...newBudget[newCategory],
+                  spent: newBudget[newCategory].spent + updatedExpense.amount
+              };
+          } else {
+             newBudget[newCategory] = { limit: updatedExpense.amount, spent: updatedExpense.amount };
+          }
+          
+          return newBudget;
+      });
+
+      setEditingExpense(null);
+  };
+
+  const handleUpdateCategory = (originalName: string, updatedCategory: { name: string; limit: number }) => {
+    setBudget(prevBudget => {
+        const newBudget = { ...prevBudget };
+        const originalCategoryData = newBudget[originalName];
+        
+        if (originalName !== updatedCategory.name) {
+            newBudget[updatedCategory.name] = {
+                spent: originalCategoryData.spent,
+                limit: updatedCategory.limit
+            };
+            delete newBudget[originalName];
+        } else {
+            newBudget[originalName].limit = updatedCategory.limit;
+        }
+        return newBudget;
+    });
+
+    if (originalName !== updatedCategory.name) {
+        setExpenses(prevExpenses =>
+            prevExpenses.map(e =>
+                e.category === originalName ? { ...e, category: updatedCategory.name } : e
+            )
+        );
+    }
+    
+    setEditingCategory(null);
+  };
+
+  const handleSetCustomDateRange = (start: string, end: string) => {
+    setDateRange({ start, end });
+    setTimePeriod('custom');
+    setIsDateRangeModalOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-200">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg sticky top-0 border-b border-slate-200 dark:border-slate-700 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+                <div className="flex items-center space-x-2">
+                    <svg className="w-8 h-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25-2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m12 0V9" />
+                    </svg>
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">FinanceGPT</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                  <CurrencySwitcher
+                    currentCurrency={currencyCode}
+                    onCurrencyChange={setCurrencyCode}
+                    currencies={SUPPORTED_CURRENCIES}
+                  />
+                   <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900"
+                    aria-label="Toggle dark mode"
+                  >
+                    {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+                  </button>
+                </div>
+            </div>
+        </div>
+      </header>
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col gap-8">
+            <Dashboard 
+              budget={filteredData.filteredBudget}
+              goals={goals} 
+              expenses={filteredData.filteredExpenses}
+              currency={selectedCurrency}
+              onAddGoalClick={() => setIsAddGoalModalOpen(true)}
+              onAddCategoryClick={() => setIsAddCategoryModalOpen(true)}
+              onDeleteGoal={handleDeleteGoal}
+              onDeleteCategory={handleDeleteCategory}
+              onEditCategory={(categoryName) => setEditingCategory({ name: categoryName, limit: budget[categoryName].limit })}
+              onEditExpense={(expense) => setEditingExpense(expense)}
+              onDeleteExpense={handleDeleteExpense}
+              timePeriod={timePeriod}
+              onTimePeriodChange={setTimePeriod}
+              onCustomDateRangeClick={() => setIsDateRangeModalOpen(true)}
+              dateRange={dateRange}
+            />
+            <ChatWindow messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} />
+        </div>
+      </main>
+
+      {isAddGoalModalOpen && (
+        <AddGoalModal 
+          onClose={() => setIsAddGoalModalOpen(false)} 
+          onAddGoal={handleAddGoal}
+          currency={selectedCurrency}
+        />
+      )}
+
+      {isAddCategoryModalOpen && (
+        <AddCategoryModal
+          onClose={() => setIsAddCategoryModalOpen(false)}
+          onAddCategory={handleAddCategory}
+          currency={selectedCurrency}
+        />
+      )}
+
+      {editingExpense && (
+        <EditExpenseModal
+          isOpen={!!editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onUpdateExpense={handleUpdateExpense}
+          expense={editingExpense}
+          currency={selectedCurrency}
+          budget={budget}
+        />
+      )}
+
+      {editingCategory && (
+        <EditCategoryModal
+          isOpen={!!editingCategory}
+          onClose={() => setEditingCategory(null)}
+          onUpdateCategory={handleUpdateCategory}
+          category={editingCategory}
+          currency={selectedCurrency}
+        />
+      )}
+
+      {confirmationState.isOpen && (
+        <ConfirmationModal
+          isOpen={confirmationState.isOpen}
+          onClose={closeConfirmationModal}
+          onConfirm={confirmationState.onConfirm}
+          title={confirmationState.title}
+          message={confirmationState.message}
+        />
+      )}
+
+      {isDateRangeModalOpen && (
+        <DateRangeModal 
+          onClose={() => setIsDateRangeModalOpen(false)}
+          onSetDateRange={handleSetCustomDateRange}
+        />
+      )}
+    </div>
+  );
+};
+
+export default App;
