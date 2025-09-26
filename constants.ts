@@ -29,6 +29,7 @@ export const SUPPORTED_CURRENCIES: Currency[] = [
 
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English' },
+  { code: 'ro', name: 'Română' },
   { code: 'zh', name: '中文 (Chinese)' },
   { code: 'hi', name: 'हिन्दी (Hindi)' },
   { code: 'es', name: 'Español' },
@@ -38,7 +39,6 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'ru', name: 'Русский (Russian)' },
   { code: 'pt', name: 'Português' },
   { code: 'de', name: 'Deutsch (German)' },
-  { code: 'ro', name: 'Română' },
 ];
 
 export const SYSTEM_PROMPT = `

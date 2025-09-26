@@ -24,6 +24,7 @@ import {
   CryptoPrice,
   CryptoCoin,
   Income,
+  BudgetCategory,
 } from './types';
 import { INITIAL_BUDGET, INITIAL_GOALS, INITIAL_EXPENSES, SUPPORTED_CURRENCIES, SUPPORTED_LANGUAGES, INITIAL_INCOME } from './constants';
 import { getFinancialAdvice, getCelebratoryMessage } from './services/geminiService';
@@ -123,20 +124,70 @@ const AppContent: React.FC = () => {
   // Financial Wellness System Logic
   useEffect(() => {
     const checkAchievements = async () => {
-      // Goal Milestone Achievement
+      // Goal Milestone Achievements
       goals.forEach(async (goal) => {
-        const achievementId = `goal-50-${goal.id}`;
-        if (goal.saved / goal.target >= 0.5 && !awardedAchievements.has(achievementId)) {
+        // 50% Milestone
+        const achievementId50 = `goal-50-${goal.id}`;
+        if (goal.saved / goal.target >= 0.5 && !awardedAchievements.has(achievementId50)) {
           const message = await getCelebratoryMessage(`Reaching 50% of the goal: "${goal.description}"`);
-          setAchievements(prev => [...prev, { id: achievementId, title: 'Goal Milestone!', message, date: new Date().toISOString() }]);
-          setAwardedAchievements(prev => new Set(prev).add(achievementId));
+          setAchievements(prev => [...prev, { id: achievementId50, title: 'Goal Milestone!', message, date: new Date().toISOString() }]);
+          setAwardedAchievements(prev => new Set(prev).add(achievementId50));
+        }
+
+        // 75% Milestone
+        const achievementId75 = `goal-75-${goal.id}`;
+        if (goal.saved / goal.target >= 0.75 && !awardedAchievements.has(achievementId75)) {
+          const message = await getCelebratoryMessage(`Reaching 75% of the goal: "${goal.description}"`);
+          setAchievements(prev => [...prev, { id: achievementId75, title: 'Almost There!', message, date: new Date().toISOString() }]);
+          setAwardedAchievements(prev => new Set(prev).add(achievementId75));
         }
       });
-      // Add more achievement checks here (e.g., spending streaks)
+      
+      // 3-Month Under Budget Streak Achievement
+      const budgetStreakId = 'under-budget-3-months';
+      if (!awardedAchievements.has(budgetStreakId)) {
+        const today = new Date();
+        let isStreak = true;
+        const totalBudgetLimit = (Object.values(budget) as BudgetCategory[]).reduce((sum, cat) => sum + cat.limit, 0);
+
+        if (totalBudgetLimit > 0) { // Only check if a budget is actually set
+            for (let i = 1; i <= 3; i++) {
+                // Get the start and end of the i-th previous month
+                const dateForMonth = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const year = dateForMonth.getFullYear();
+                const month = dateForMonth.getMonth();
+    
+                const startDate = new Date(year, month, 1);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(year, month + 1, 0);
+                endDate.setHours(23, 59, 59, 999);
+
+                const monthlyExpenses = expenses
+                    .filter(e => {
+                        const expenseDate = new Date(e.date);
+                        return expenseDate >= startDate && expenseDate <= endDate;
+                    })
+                    .reduce((sum, e) => sum + e.amount, 0);
+                
+                if (monthlyExpenses > totalBudgetLimit) {
+                    isStreak = false;
+                    break;
+                }
+            }
+        } else {
+            isStreak = false; // No budget limit means no streak is possible
+        }
+    
+        if (isStreak) {
+            const message = await getCelebratoryMessage("Staying under budget for 3 consecutive months");
+            setAchievements(prev => [...prev, { id: budgetStreakId, title: 'Budgeting Pro!', message, date: new Date().toISOString() }]);
+            setAwardedAchievements(prev => new Set(prev).add(budgetStreakId));
+        }
+      }
     };
 
     checkAchievements();
-  }, [goals, expenses, awardedAchievements]);
+  }, [goals, expenses, budget, awardedAchievements]);
 
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
