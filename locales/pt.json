@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "Olá! Eu sou o FinanceGPT. Como posso ajudá-lo a gerir o seu dinheiro hoje? Pode registar despesas como 'Gastei 50€ em mercearias' ou perguntar 'Como está o meu orçamento?'",
   "financialOverview": "Visão Geral Financeira",
@@ -8,6 +7,7 @@
   "timePeriod.month": "Este Mês",
   "timePeriod.all": "Sempre",
   "timePeriod.custom": "Personalizado",
+  "statCard.totalIncome": "Rendimento Total",
   "statCard.totalSpent": "Total Gasto",
   "statCard.netCashFlow": "Fluxo de Caixa Líquido",
   "statCard.topSpending": "Principal Categoria de Despesa",
@@ -17,6 +17,9 @@
   "donut.noCategories": "Nenhuma categoria de orçamento definida. Clique em 'Adicionar Categoria' para começar.",
   "donut.noSpending": "Ainda não há dados de despesas para exibir.",
   "donut.totalSpent": "Total Gasto",
+  "incomeVsExpenses.title": "Rendimentos vs. Despesas",
+  "incomeVsExpenses.income": "Rendimentos",
+  "incomeVsExpenses.expenses": "Despesas",
   "achievements": "Conquistas",
   "wellness.placeholder": "As suas conquistas financeiras aparecerão aqui. Continue o bom trabalho!",
   "financialGoals": "Metas Financeiras",

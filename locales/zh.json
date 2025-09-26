@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "你好！我是 FinanceGPT。今天我该如何帮助您管理您的资金？您可以记录像“我花了50元买菜”这样的开销，或者问“我的预算怎么样了？”",
   "financialOverview": "财务概览",
@@ -8,6 +7,7 @@
   "timePeriod.month": "本月",
   "timePeriod.all": "所有时间",
   "timePeriod.custom": "自定义",
+  "statCard.totalIncome": "总收入",
   "statCard.totalSpent": "总支出",
   "statCard.netCashFlow": "净现金流",
   "statCard.topSpending": "最高支出类别",
@@ -17,6 +17,9 @@
   "donut.noCategories": "未定义预算类别。点击“添加类别”开始。",
   "donut.noSpending": "暂无支出数据显示。",
   "donut.totalSpent": "总支出",
+  "incomeVsExpenses.title": "收入 vs. 支出",
+  "incomeVsExpenses.income": "收入",
+  "incomeVsExpenses.expenses": "支出",
   "achievements": "成就",
   "wellness.placeholder": "您的财务成就将显示在此处。继续努力！",
   "financialGoals": "财务目标",

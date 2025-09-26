@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "নমস্কার! আমি FinanceGPT। আজ আপনার টাকা পরিচালনায় আমি কীভাবে সাহায্য করতে পারি? আপনি 'আমি মুদি দোকানে ৫০০ টাকা খরচ করেছি' এর মতো খরচ লগ করতে পারেন বা 'আমার বাজেট কেমন চলছে?' জিজ্ঞাসা করতে পারেন।",
   "financialOverview": "আর্থিক চিত্র",
@@ -8,6 +7,7 @@
   "timePeriod.month": "এই মাস",
   "timePeriod.all": "সর্বদা",
   "timePeriod.custom": "কাস্টম",
+  "statCard.totalIncome": "মোট আয়",
   "statCard.totalSpent": "মোট খরচ",
   "statCard.netCashFlow": "নেট ক্যাশ ফ্লো",
   "statCard.topSpending": "সর্বোচ্চ খরচের বিভাগ",
@@ -17,6 +17,9 @@
   "donut.noCategories": "কোনো বাজেট বিভাগ সংজ্ঞায়িত করা হয়নি। শুরু করতে 'বিভাগ যোগ করুন' ক্লিক করুন।",
   "donut.noSpending": "এখনও দেখানোর জন্য কোনো খরচের ডেটা নেই।",
   "donut.totalSpent": "মোট খরচ",
+  "incomeVsExpenses.title": "আয় বনাম ব্যয়",
+  "incomeVsExpenses.income": "আয়",
+  "incomeVsExpenses.expenses": "ব্যয়",
   "achievements": "কৃতিত্ব",
   "wellness.placeholder": "আপনার আর্থিক কৃতিত্ব এখানে প্রদর্শিত হবে। দারুণ কাজ চালিয়ে যান!",
   "financialGoals": "আর্থিক লক্ষ্য",

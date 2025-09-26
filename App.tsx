@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Dashboard from './components/Dashboard';
 import ChatWindow from './components/ChatWindow';
@@ -25,8 +23,9 @@ import {
   CryptoHolding,
   CryptoPrice,
   CryptoCoin,
+  Income,
 } from './types';
-import { INITIAL_BUDGET, INITIAL_GOALS, INITIAL_EXPENSES, SUPPORTED_CURRENCIES, SUPPORTED_LANGUAGES } from './constants';
+import { INITIAL_BUDGET, INITIAL_GOALS, INITIAL_EXPENSES, SUPPORTED_CURRENCIES, SUPPORTED_LANGUAGES, INITIAL_INCOME } from './constants';
 import { getFinancialAdvice, getCelebratoryMessage } from './services/geminiService';
 import { fetchCryptoPrices, fetchSupportedCoins } from './services/cryptoService';
 import CurrencySwitcher from './components/CurrencySwitcher';
@@ -49,6 +48,7 @@ const AppContent: React.FC = () => {
   const [budget, setBudget] = useState<Budget>(INITIAL_BUDGET);
   const [goals, setGoals] = useState<Goal[]>(INITIAL_GOALS);
   const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
+  const [income, setIncome] = useState<Income[]>(INITIAL_INCOME);
   const { t, languageCode, setLanguageCode } = useI18n();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -178,6 +178,13 @@ const AppContent: React.FC = () => {
       return expenseDate >= startDate && expenseDate <= endDate;
     });
     
+    const relevantIncome = income.filter(i => {
+        const incomeDate = new Date(i.date);
+        return incomeDate >= startDate && incomeDate <= endDate;
+    });
+
+    const totalIncome = relevantIncome.reduce((sum, i) => sum + i.amount, 0);
+
     const newBudget = JSON.parse(JSON.stringify(budget)) as Budget;
     Object.keys(budget).forEach(category => {
         if (!newBudget[category]) newBudget[category] = { ...budget[category], spent: 0 };
@@ -197,8 +204,8 @@ const AppContent: React.FC = () => {
         }
     });
 
-    return { filteredExpenses: relevantExpenses, filteredBudget: newBudget };
-  }, [expenses, budget, timePeriod, dateRange]);
+    return { filteredExpenses: relevantExpenses, filteredBudget: newBudget, totalIncome };
+  }, [expenses, income, budget, timePeriod, dateRange]);
 
   const handleGeminiResponse = useCallback((response: GeminiResponse) => {
     const newModelMessage: ChatMessage = { role: MessageRole.MODEL, content: response.summary_text };
@@ -526,6 +533,7 @@ const AppContent: React.FC = () => {
               budget={filteredData.filteredBudget}
               goals={goals} 
               expenses={filteredData.filteredExpenses}
+              totalIncome={filteredData.totalIncome}
               currency={selectedCurrency}
               supportedCurrencies={SUPPORTED_CURRENCIES}
               achievements={achievements}

@@ -1,11 +1,12 @@
-
 import React from 'react';
-import { Budget, Goal, Expense, Currency, TimePeriod, Achievement, CryptoHolding, CryptoPrice } from '../types';
+// FIX: Import BudgetCategory to correctly type budget items
+import { Budget, Goal, Expense, Currency, TimePeriod, Achievement, CryptoHolding, CryptoPrice, BudgetCategory } from '../types';
 import GoalTracker from './GoalTracker';
 import DonutChart from './DonutChart';
 import WellnessTracker from './WellnessTracker';
 import CryptoTracker from './CryptoTracker';
-import { CashIcon, TrendingUpIcon, ChartPieIcon, PlusIcon, PencilIcon, TrashIcon, CalendarIcon, CryptoIcon } from './icons';
+import IncomeExpenseChart from './IncomeExpenseChart';
+import { CashIcon, TrendingUpIcon, ArrowUpCircleIcon, PlusIcon, PencilIcon, TrashIcon, CalendarIcon, CryptoIcon } from './icons';
 import { formatCurrency } from '../utils/formatting';
 import { useI18n } from '../i18n';
 
@@ -13,6 +14,7 @@ interface DashboardProps {
   budget: Budget;
   goals: Goal[];
   expenses: Expense[];
+  totalIncome: number;
   currency: Currency;
   supportedCurrencies: Currency[];
   achievements: Achievement[];
@@ -79,17 +81,13 @@ const TimePeriodSelector: React.FC<{ selected: TimePeriod, onChange: (period: Ti
 
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
-  const { budget, goals, expenses, currency, supportedCurrencies, achievements, cryptoHoldings, cryptoPrices, cryptoDisplayCurrency, onCryptoDisplayCurrencyChange, onAddGoalClick, onAddCategoryClick, onAddCryptoClick, onDeleteGoal, onDeleteCategory, onEditCategory, onEditExpense, onDeleteExpense, onEditCrypto, onDeleteCrypto, timePeriod, onTimePeriodChange, onCustomDateRangeClick, dateRange } = props;
+  const { budget, goals, expenses, totalIncome, currency, supportedCurrencies, achievements, cryptoHoldings, cryptoPrices, cryptoDisplayCurrency, onCryptoDisplayCurrencyChange, onAddGoalClick, onAddCategoryClick, onAddCryptoClick, onDeleteGoal, onDeleteCategory, onEditCategory, onEditExpense, onDeleteExpense, onEditCrypto, onDeleteCrypto, timePeriod, onTimePeriodChange, onCustomDateRangeClick, dateRange } = props;
   const { t } = useI18n();
 
-  const totalSpent = Object.values(budget).reduce((sum, cat) => sum + cat.spent, 0);
-  const totalLimit = Object.values(budget).reduce((sum, cat) => sum + cat.limit, 0);
-  const netCashFlow = totalLimit - totalSpent;
+  // FIX: Cast `cat` to BudgetCategory to access `spent` property, as Object.values may return `unknown[]`.
+  const totalSpent = Object.values(budget).reduce((sum, cat) => sum + (cat as BudgetCategory).spent, 0);
+  const netCashFlow = totalIncome - totalSpent;
   
-  const topCategory = Object.entries(budget).reduce((top, [cat, data]) => {
-      return data.spent > top.spent ? { category: cat, spent: data.spent } : top;
-  }, { category: 'None', spent: 0 });
-
   const totalCryptoValue = cryptoHoldings.reduce((sum, holding) => {
     const price = cryptoPrices[holding.apiId]?.[cryptoDisplayCurrency.code.toLowerCase()] || 0;
     return sum + holding.amount * price;
@@ -121,6 +119,12 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
+            title={`${t('statCard.totalIncome')} (${getStatCardTitle()})`}
+            value={formatCurrency(totalIncome, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            icon={<ArrowUpCircleIcon className="w-6 h-6 text-white" />}
+            color="bg-emerald-500"
+        />
+        <StatCard 
             title={`${t('statCard.totalSpent')} (${getStatCardTitle()})`}
             value={formatCurrency(totalSpent, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             icon={<CashIcon className="w-6 h-6 text-white" />}
@@ -130,15 +134,9 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             title={t('statCard.netCashFlow')}
             value={formatCurrency(netCashFlow, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             icon={<TrendingUpIcon className={`w-6 h-6 text-white ${netCashFlow < 0 ? 'transform scale-y-[-1]' : ''}`} />}
-            color={netCashFlow >= 0 ? 'bg-emerald-500' : 'bg-red-500'}
+            color={netCashFlow >= 0 ? 'bg-teal-500' : 'bg-red-500'}
         />
          <StatCard 
-            title={t('statCard.topSpending')}
-            value={topCategory.category}
-            icon={<ChartPieIcon className="w-6 h-6 text-white" />}
-            color="bg-amber-500"
-        />
-        <StatCard 
             title={t('statCard.cryptoValue')}
             value={formatCurrency(totalCryptoValue, cryptoDisplayCurrency.code, cryptoDisplayCurrency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             icon={<CryptoIcon className="w-6 h-6 text-white" />}
@@ -147,18 +145,21 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{t('spendingBreakdown')}</h3>
-              <button 
-                onClick={onAddCategoryClick}
-                className="flex items-center gap-1 text-sm bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 rounded-full hover:bg-indigo-200 transition-colors dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900"
-              >
-                <PlusIcon className="w-4 h-4" />
-                {t('addCategory')}
-              </button>
+        <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{t('spendingBreakdown')}</h3>
+                  <button 
+                    onClick={onAddCategoryClick}
+                    className="flex items-center gap-1 text-sm bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 rounded-full hover:bg-indigo-200 transition-colors dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t('addCategory')}
+                  </button>
+                </div>
+                <DonutChart budget={budget} currency={currency} onDeleteCategory={onDeleteCategory} onEditCategory={onEditCategory} />
             </div>
-            <DonutChart budget={budget} currency={currency} onDeleteCategory={onDeleteCategory} onEditCategory={onEditCategory} />
+            <IncomeExpenseChart income={totalIncome} expenses={totalSpent} currency={currency} />
         </div>
         <div className="lg:col-span-3">
           <div className="space-y-6">

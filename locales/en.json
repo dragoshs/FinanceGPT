@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "Hello! I'm FinanceGPT. How can I help you manage your money today? You can log expenses like 'I spent $50 on groceries' or ask 'How's my budget doing?'",
   "financialOverview": "Financial Overview",
@@ -8,6 +7,7 @@
   "timePeriod.month": "This Month",
   "timePeriod.all": "All Time",
   "timePeriod.custom": "Custom",
+  "statCard.totalIncome": "Total Income",
   "statCard.totalSpent": "Total Spent",
   "statCard.netCashFlow": "Net Cash Flow",
   "statCard.topSpending": "Top Spending Category",
@@ -17,6 +17,9 @@
   "donut.noCategories": "No budget categories defined. Click 'Add Category' to start.",
   "donut.noSpending": "No spending data to display yet.",
   "donut.totalSpent": "Total Spent",
+  "incomeVsExpenses.title": "Income vs. Expenses",
+  "incomeVsExpenses.income": "Income",
+  "incomeVsExpenses.expenses": "Expenses",
   "achievements": "Achievements",
   "wellness.placeholder": "Your financial achievements will appear here. Keep up the great work!",
   "financialGoals": "Financial Goals",

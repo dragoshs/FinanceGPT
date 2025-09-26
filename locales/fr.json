@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "Bonjour ! Je suis FinanceGPT. Comment puis-je vous aider à gérer votre argent aujourd'hui ? Vous pouvez enregistrer des dépenses comme 'J'ai dépensé 50 € en courses' ou demander 'Comment va mon budget ?'",
   "financialOverview": "Aperçu Financier",
@@ -8,6 +7,7 @@
   "timePeriod.month": "Ce Mois",
   "timePeriod.all": "Toujours",
   "timePeriod.custom": "Personnalisé",
+  "statCard.totalIncome": "Revenu Total",
   "statCard.totalSpent": "Total Dépensé",
   "statCard.netCashFlow": "Flux de Trésorerie Net",
   "statCard.topSpending": "Catégorie de Dépenses Principale",
@@ -17,6 +17,9 @@
   "donut.noCategories": "Aucune catégorie de budget définie. Cliquez sur 'Ajouter Catégorie' pour commencer.",
   "donut.noSpending": "Aucune donnée de dépense à afficher pour le moment.",
   "donut.totalSpent": "Total Dépensé",
+  "incomeVsExpenses.title": "Revenus vs. Dépenses",
+  "incomeVsExpenses.income": "Revenus",
+  "incomeVsExpenses.expenses": "Dépenses",
   "achievements": "Réalisations",
   "wellness.placeholder": "Vos réalisations financières apparaîtront ici. Continuez votre bon travail !",
   "financialGoals": "Objectifs Financiers",

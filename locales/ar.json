@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "أهلاً بك! أنا FinanceGPT. كيف يمكنني مساعدتك في إدارة أموالك اليوم؟ يمكنك تسجيل النفقات مثل 'أنفقت 50 دولارًا على البقالة' أو أن تسأل 'كيف هو وضعي المالي؟'",
   "financialOverview": "نظرة عامة مالية",
@@ -8,6 +7,7 @@
   "timePeriod.month": "هذا الشهر",
   "timePeriod.all": "كل الأوقات",
   "timePeriod.custom": "مخصص",
+  "statCard.totalIncome": "إجمالي الدخل",
   "statCard.totalSpent": "إجمالي المصروفات",
   "statCard.netCashFlow": "صافي التدفق النقدي",
   "statCard.topSpending": "أعلى فئة إنفاق",
@@ -17,6 +17,9 @@
   "donut.noCategories": "لا توجد فئات ميزانية محددة. انقر على 'إضافة فئة' للبدء.",
   "donut.noSpending": "لا توجد بيانات إنفاق لعرضها حتى الآن.",
   "donut.totalSpent": "إجمالي المصروفات",
+  "incomeVsExpenses.title": "الدخل مقابل المصروفات",
+  "incomeVsExpenses.income": "الدخل",
+  "incomeVsExpenses.expenses": "المصروفات",
   "achievements": "الإنجازات",
   "wellness.placeholder": "ستظهر إنجازاتك المالية هنا. استمر في العمل الرائع!",
   "financialGoals": "الأهداف المالية",

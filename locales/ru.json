@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "Здравствуйте! Я FinanceGPT. Чем я могу помочь вам сегодня в управлении вашими деньгами? Вы можете записывать расходы, например, 'Я потратил 500 рублей на продукты', или спросить 'Как дела с моим бюджетом?'",
   "financialOverview": "Финансовый обзор",
@@ -8,6 +7,7 @@
   "timePeriod.month": "Этот месяц",
   "timePeriod.all": "Все время",
   "timePeriod.custom": "Пользовательский",
+  "statCard.totalIncome": "Общий доход",
   "statCard.totalSpent": "Всего потрачено",
   "statCard.netCashFlow": "Чистый денежный поток",
   "statCard.topSpending": "Основная категория расходов",
@@ -17,6 +17,9 @@
   "donut.noCategories": "Категории бюджета не определены. Нажмите 'Добавить категорию', чтобы начать.",
   "donut.noSpending": "Данных о расходах пока нет.",
   "donut.totalSpent": "Всего потрачено",
+  "incomeVsExpenses.title": "Доходы и расходы",
+  "incomeVsExpenses.income": "Доходы",
+  "incomeVsExpenses.expenses": "Расходы",
   "achievements": "Достижения",
   "wellness.placeholder": "Ваши финансовые достижения будут отображаться здесь. Продолжайте в том же духе!",
   "financialGoals": "Финансовые цели",

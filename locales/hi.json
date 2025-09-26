@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "नमस्ते! मैं FinanceGPT हूँ। आज मैं आपके पैसे का प्रबंधन करने में आपकी कैसे मदद कर सकता हूँ? आप 'मैंने किराने पर 500 रुपये खर्च किए' जैसे खर्चों को लॉग कर सकते हैं या 'मेरा बजट कैसा चल रहा है?' पूछ सकते हैं।",
   "financialOverview": "वित्तीय अवलोकन",
@@ -8,6 +7,7 @@
   "timePeriod.month": "इस महीने",
   "timePeriod.all": "सभी समय",
   "timePeriod.custom": "कस्टम",
+  "statCard.totalIncome": "कुल आय",
   "statCard.totalSpent": "कुल खर्च",
   "statCard.netCashFlow": "शुद्ध नकदी प्रवाह",
   "statCard.topSpending": "शीर्ष खर्च श्रेणी",
@@ -17,6 +17,9 @@
   "donut.noCategories": "कोई बजट श्रेणियां परिभाषित नहीं हैं। शुरू करने के लिए 'श्रेणी जोड़ें' पर क्लिक करें।",
   "donut.noSpending": "अभी तक दिखाने के लिए कोई खर्च डेटा नहीं है।",
   "donut.totalSpent": "कुल खर्च",
+  "incomeVsExpenses.title": "आय बनाम व्यय",
+  "incomeVsExpenses.income": "आय",
+  "incomeVsExpenses.expenses": "व्यय",
   "achievements": "उपलब्धियां",
   "wellness.placeholder": "आपकी वित्तीय उपलब्धियां यहां दिखाई देंगी। बढ़िया काम करते रहें!",
   "financialGoals": "वित्तीय लक्ष्य",

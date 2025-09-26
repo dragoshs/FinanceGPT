@@ -1,4 +1,4 @@
-import { Budget, Goal, ExpenseCategory, Currency, Expense } from './types';
+import { Budget, Goal, ExpenseCategory, Currency, Expense, Income } from './types';
 
 export const SUPPORTED_CURRENCIES: Currency[] = [
   // Most commonly used currencies first
@@ -99,6 +99,12 @@ const now = new Date();
 const today = now.toISOString();
 const threeDaysAgo = new Date(new Date().setDate(now.getDate() - 3)).toISOString();
 const sevenDaysAgo = new Date(new Date().setDate(now.getDate() - 7)).toISOString();
+
+export const INITIAL_INCOME: Income[] = [
+    { id: 'i1', description: 'Monthly Salary', amount: 4500, date: new Date(now.getFullYear(), now.getMonth(), 1).toISOString() },
+    { id: 'i2', description: 'Freelance Project', amount: 750, date: sevenDaysAgo },
+    { id: 'i3', description: 'Stock Dividend', amount: 125, date: new Date(new Date().setDate(now.getDate() - 15)).toISOString() },
+];
 
 export const INITIAL_EXPENSES: Expense[] = [
     { id: 'e1', description: 'Monthly Rent', amount: 1200, category: ExpenseCategory.Housing, date: new Date(now.getFullYear(), now.getMonth(), 1).toISOString() },

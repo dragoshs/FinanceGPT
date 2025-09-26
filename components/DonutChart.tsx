@@ -1,5 +1,6 @@
 import React from 'react';
-import { Budget, Currency } from '../types';
+// FIX: Import BudgetCategory to correctly type budget items
+import { Budget, Currency, BudgetCategory } from '../types';
 import { formatCurrency } from '../utils/formatting';
 import { TrashIcon, PencilIcon } from './icons';
 import { useI18n } from '../i18n';
@@ -28,7 +29,8 @@ const getCategoryColor = (category: string) => {
 
 const DonutChart: React.FC<{ budget: Budget, currency: Currency, onDeleteCategory: (category: string) => void, onEditCategory: (category: string) => void }> = ({ budget, currency, onDeleteCategory, onEditCategory }) => {
   const { t } = useI18n();
-  const categories = Object.entries(budget).filter(([, data]) => data.spent > 0);
+  // FIX: Cast budget entries to the correct type to allow property access, as Object.entries may return `[string, unknown][]`.
+  const categories = (Object.entries(budget) as [string, BudgetCategory][]).filter(([, data]) => data.spent > 0);
   const totalSpent = categories.reduce((sum, [, data]) => sum + data.spent, 0);
 
   if (totalSpent === 0 && Object.keys(budget).length === 0) {
@@ -85,7 +87,9 @@ const DonutChart: React.FC<{ budget: Budget, currency: Currency, onDeleteCategor
         <div className="w-full">
             <ul className="divide-y divide-slate-200 dark:divide-slate-700">
                 {Object.entries(budget).map(([category, data]) => {
-                    const isOverBudget = data.limit > 0 && data.spent > data.limit;
+                    // FIX: Cast `data` to BudgetCategory to access its properties.
+                    const budgetCategory = data as BudgetCategory;
+                    const isOverBudget = budgetCategory.limit > 0 && budgetCategory.spent > budgetCategory.limit;
                     return (
                         <li key={category} className="flex items-center justify-between text-sm py-3">
                             <div className="flex items-center">
@@ -96,7 +100,7 @@ const DonutChart: React.FC<{ budget: Budget, currency: Currency, onDeleteCategor
                                 <span className={`${isOverBudget ? 'text-red-600 dark:text-red-500' : 'text-slate-600 dark:text-slate-300'}`}>{category}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className={`font-semibold mr-1 ${isOverBudget ? 'text-red-600 dark:text-red-500' : 'text-slate-800 dark:text-slate-200'}`}>{formatCurrency(data.spent, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                              <span className={`font-semibold mr-1 ${isOverBudget ? 'text-red-600 dark:text-red-500' : 'text-slate-800 dark:text-slate-200'}`}>{formatCurrency(budgetCategory.spent, currency.code, currency.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                <button
                                 onClick={() => onEditCategory(category)}
                                 className="p-1 rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"

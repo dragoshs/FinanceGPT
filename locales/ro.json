@@ -1,4 +1,3 @@
-
 {
   "initialGreeting": "Bună! Sunt FinanceGPT. Cum te pot ajuta să-ți gestionezi banii astăzi? Poți înregistra cheltuieli precum 'Am cheltuit 50 de lei pe cumpărături' sau să întrebi 'Cum stau cu bugetul?'",
   "financialOverview": "Prezentare Financiară Generală",
@@ -8,6 +7,7 @@
   "timePeriod.month": "Luna Aceasta",
   "timePeriod.all": "Tot Timpul",
   "timePeriod.custom": "Personalizat",
+  "statCard.totalIncome": "Venit Total",
   "statCard.totalSpent": "Total Cheltuit",
   "statCard.netCashFlow": "Flux de Numerar Net",
   "statCard.topSpending": "Categoria Principală de Cheltuieli",
@@ -17,6 +17,9 @@
   "donut.noCategories": "Nu sunt definite categorii de buget. Apasă 'Adaugă Categorie' pentru a începe.",
   "donut.noSpending": "Nu există încă date despre cheltuieli de afișat.",
   "donut.totalSpent": "Total Cheltuit",
+  "incomeVsExpenses.title": "Venituri vs. Cheltuieli",
+  "incomeVsExpenses.income": "Venituri",
+  "incomeVsExpenses.expenses": "Cheltuieli",
   "achievements": "Realizări",
   "wellness.placeholder": "Realizările tale financiare vor apărea aici. Continuă tot așa!",
   "financialGoals": "Obiective Financiare",
